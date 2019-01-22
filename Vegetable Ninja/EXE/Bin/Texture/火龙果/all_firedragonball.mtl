@@ -1,0 +1,16 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# 创建的文件:14.08.2017 09:48:40
+
+newmtl Material__4
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5880 0.5880 0.5880
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\Documents\Downloads\328 火龙果模型\huolongguomoxing\Evermotion Archmodels Vol 130 (蔬果合集)\Textures\AM130_022_diff_01.jpg
+	map_Kd D:\Documents\Downloads\328 火龙果模型\huolongguomoxing\Evermotion Archmodels Vol 130 (蔬果合集)\Textures\AM130_022_diff_01.jpg

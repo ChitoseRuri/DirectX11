@@ -1,0 +1,18 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# 创建的文件:14.08.2017 10:34:44
+
+newmtl AM130_003_001
+	Ns 43.2193
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.0000 0.0000 0.0000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka AM130_003_001_DiffuseColor_合成.tga
+	map_Kd AM130_003_001_DiffuseColor_合成.tga
+	map_Ke AM130_003_001_EmissiveColor_合成.tga
+	map_refl AM130_003_001_ReflectionColor_合成.tga
