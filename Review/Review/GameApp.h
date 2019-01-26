@@ -3,6 +3,7 @@
 #include "Geometry.h"
 #include "LightHelper.h"
 #include "Camera.h"
+#include "UI.h"
 	
 class GameApp : public D3DApp
 {
@@ -37,4 +38,7 @@ private:
 	ComPtr<ID3D11VertexShader> mVertexShader;	// 顶点着色器
 	ComPtr<ID3D11PixelShader> mPixelShader;		// 像素着色器
 	
+	ComPtr<ID2D1SolidColorBrush> mColorBrush;	//单色笔刷
+	ComPtr<IDWriteFont> mFont;					//字体
+	ComPtr<IDWriteTextFormat> mTextFormat;		//文本格式
 };

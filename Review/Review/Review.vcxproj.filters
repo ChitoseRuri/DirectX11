@@ -45,6 +45,9 @@
     <ClCompile Include="Mouse.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h">
@@ -78,6 +81,9 @@
       <Filter>Head</Filter>
     </ClInclude>
     <ClInclude Include="Mouse.h">
+      <Filter>Head</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
       <Filter>Head</Filter>
     </ClInclude>
   </ItemGroup>

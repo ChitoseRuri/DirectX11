@@ -1,6 +1,8 @@
 #pragma once
 #include <wrl/client.h>
 #include <string>
+#include <d2d1.h>
+#include <dwrite.h>
 #include <d3d11_1.h>
 #include <DirectXMath.h>
 #include "GameTimer.h"
@@ -8,6 +10,8 @@
 #include "Keyboard.h"
 
 // 添加所有要引用的库
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -36,6 +40,7 @@ public:
 
 protected:
 	bool InitMainWindow();      // 窗口初始化
+	bool InitDirect2D();		// D2D初始化
 	bool InitDirect3D();        // Direct3D初始化
 
 	void CalculateFrameStats(); // 计算每秒帧数并在窗口显示
@@ -57,6 +62,10 @@ protected:
 	// 使用模板别名(C++11)简化类型名
 	template <class T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
+	//D2D
+	ComPtr<ID2D1Factory> md2dFactory;					//D2D工厂
+	ComPtr<IDWriteFactory> mdwriteFactory;				//DWrite工厂
+	ComPtr<ID2D1RenderTarget> md2dRenderTarget;			//D2D渲染目标
 	// DX11
 	ComPtr<ID3D11Device> md3dDevice;                    // D3D11设备
 	ComPtr<ID3D11DeviceContext> md3dImmediateContext;   // D3D11设备上下文
