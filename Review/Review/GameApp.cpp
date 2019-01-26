@@ -29,7 +29,21 @@ bool GameApp::Init()
 	if (!InitResource())
 		return false;
 
+	if (!InitControl())
+		return false;
+
 	return true;
+}
+
+bool GameApp::InitControl()
+{
+	mMouse = std::make_unique<DirectX::Mouse>();
+	mKeyboard = std::make_unique<DirectX::Keyboard>();
+
+	mMouse->SetWindow(mhMainWnd);
+	mMouse->SetMode(DirectX::Mouse::Mode::MODE_ABSOLUTE);
+
+	return mMouse!=nullptr;
 }
 
 void GameApp::OnResize()
@@ -87,7 +101,7 @@ bool GameApp::InitResource()
 	D3D11_BUFFER_DESC vbd;
 	ZeroMemory(&vbd, sizeof(vbd));
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
-	vbd.ByteWidth = sizeof vertices;
+	vbd.ByteWidth = sizeof(vertices);
 	vbd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	vbd.CPUAccessFlags = 0;
 	// 新建顶点缓冲区

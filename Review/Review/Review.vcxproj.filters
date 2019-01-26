@@ -39,6 +39,12 @@
     <ClCompile Include="Camera.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h">
@@ -66,6 +72,12 @@
       <Filter>Head</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
+      <Filter>Head</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>Head</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
       <Filter>Head</Filter>
     </ClInclude>
   </ItemGroup>

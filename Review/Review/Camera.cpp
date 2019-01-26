@@ -367,4 +367,3 @@ void ThirdPersonCamera::UpdateViewMatrix()
 		-XMVectorGetX(XMVector3Dot(P, R)), -XMVectorGetX(XMVector3Dot(P, U)), -XMVectorGetX(XMVector3Dot(P, L)), 1.0f
 	};
 }
-

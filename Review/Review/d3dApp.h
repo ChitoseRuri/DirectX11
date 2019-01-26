@@ -4,6 +4,8 @@
 #include <d3d11_1.h>
 #include <DirectXMath.h>
 #include "GameTimer.h"
+#include "Mouse.h"
+#include "Keyboard.h"
 
 // 添加所有要引用的库
 #pragma comment(lib, "d3d11.lib")
@@ -26,11 +28,12 @@ public:
 
 	// 框架方法。客户派生类需要重载这些方法以实现特定的应用需求
 	virtual bool Init();            // 该父类方法需要初始化窗口和Direct3D部分
+	virtual bool InitControl() = 0;	//初始化需要的控制器
 	virtual void OnResize();        // 该父类方法需要在窗口大小变动的时候调用
 	virtual void UpdateScene(float dt) = 0;   // 子类需要实现该方法，完成每一帧的更新
 	virtual void DrawScene() = 0;             // 子类需要实现该方法，完成每一帧的绘制
-	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-	// 窗口的消息回调函数
+	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);	 // 窗口的消息回调函数
+
 protected:
 	bool InitMainWindow();      // 窗口初始化
 	bool InitDirect3D();        // Direct3D初始化
@@ -72,4 +75,11 @@ protected:
 	std::wstring mMainWndCaption;                       // 主窗口标题
 	int mClientWidth;                                   // 视口宽度
 	int mClientHeight;                                  // 视口高度
+
+	//鼠标键盘
+	std::unique_ptr<DirectX::Mouse> mMouse;						//鼠标“单例”
+	DirectX::Mouse::ButtonStateTracker mMouseTracker;			//鼠标(按钮)状态追踪器
+	std::unique_ptr<DirectX::Keyboard> mKeyboard;				//键盘“单例”
+	DirectX::Keyboard::KeyboardStateTracker mKeyboardTracker;	//键盘状态追踪器
+
 };

@@ -3,7 +3,7 @@
 #include "Geometry.h"
 #include "LightHelper.h"
 #include "Camera.h"
-
+	
 class GameApp : public D3DApp
 {
 public:
@@ -18,10 +18,11 @@ public:
 	GameApp(HINSTANCE hInstance);
 	~GameApp();
 
-	bool Init();
-	void OnResize();
-	void UpdateScene(float dt);
-	void DrawScene();
+	bool Init() override;
+	bool InitControl() override;
+	void OnResize()	override;
+	void UpdateScene(float dt) override;
+	void DrawScene() override;
 
 
 private:
@@ -35,4 +36,5 @@ private:
 	ComPtr<ID3D11Buffer> mVertexBuffer;			// 顶点缓冲区
 	ComPtr<ID3D11VertexShader> mVertexShader;	// 顶点着色器
 	ComPtr<ID3D11PixelShader> mPixelShader;		// 像素着色器
+	
 };
