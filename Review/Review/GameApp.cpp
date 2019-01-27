@@ -29,13 +29,13 @@ bool GameApp::Init()
 	if (!InitResource())
 		return false;
 
-	if (!InitControl())
+	if (!InitInput())
 		return false;
 
 	return true;
 }
 
-bool GameApp::InitControl()
+bool GameApp::InitInput()
 {
 	mMouse = std::make_unique<DirectX::Mouse>();
 	mKeyboard = std::make_unique<DirectX::Keyboard>();

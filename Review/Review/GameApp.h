@@ -20,7 +20,7 @@ public:
 	~GameApp();
 
 	bool Init() override;
-	bool InitControl() override;
+	bool InitInput() override;
 	void OnResize()	override;
 	void UpdateScene(float dt) override;
 	void DrawScene() override;

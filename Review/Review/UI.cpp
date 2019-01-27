@@ -1,32 +1,33 @@
 #include "UI.h"
 
-//D3D交换链
-ComPtr<IDXGISwapChain> Control::mSwapChain;	//共享交换链
-
-//D2D
-ComPtr<ID2D1Factory> Control::md2dFactory;					//D2D工厂
-ComPtr<IDWriteFactory> Control::mdwriteFactory;				//DWrite工厂
-ComPtr<ID2D1RenderTarget> Control::md2dRenderTarget;			//D2D渲染目标
-ComPtr<IDXGISurface> Control::mSurface;						//DXGI表面渲染目标
-
-bool Control::InitControl(const ComPtr<IDXGISwapChain> & swapChain)
+UI::UI()
 {
-	mSwapChain = swapChain;//获取交换链
+}
 
+UI::~UI()
+{
+}
+
+bool UI::InitControl(const ComPtr<IDXGISwapChain>& swapChain)
+{
+	//获取交换链的共享
+	mSwapChain = swapChain;
+	//创建D2D工厂
 	HR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, md2dFactory.GetAddressOf()));
 	HR(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
 		reinterpret_cast<IUnknown **>(mdwriteFactory.GetAddressOf())));
+	//初始化控件系统
+	Control::InitControl(mdwriteFactory, md2dRenderTarget);
+
 	return true;
 }
 
-void Control::Resize()
+void UI::BeforeD3dResize()
 {
-	// 为D2D创建DXGI表面渲染目标
-	ComPtr<IDXGISurface> surface;
-	HR(mSwapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(surface.GetAddressOf())));
-	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-		D2D1_RENDER_TARGET_TYPE_DEFAULT,
-		D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
-	HRESULT hr = md2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, md2dRenderTarget.GetAddressOf());
-	surface.Reset();
+	Label::BeforeResize();
+}
+
+void UI::AfterD3dResize()
+{
+	Label::AfterResize(md2dFactory,mSwapChain);
 }
