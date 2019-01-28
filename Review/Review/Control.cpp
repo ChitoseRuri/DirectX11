@@ -29,7 +29,7 @@ bool Control::GetVisable() const noexcept
 
 void Control::SetRect(D2D_RECT_F rect)
 {
-	mRectN = rect;
+	mRectD = mRectN = rect;//默认绘制Rect跟原始Rect相同
 }
 
 const D2D_RECT_F & Control::GetRect() const noexcept

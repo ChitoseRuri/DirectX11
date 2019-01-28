@@ -15,6 +15,7 @@ private:
 	ComPtr<ID2D1RenderTarget> md2dRenderTarget;			//D2D渲染目标
 	ComPtr<IDXGISurface> mSurface;						//DXGI表面渲染目标
 
+public:
 	std::vector<Label> mLabels;							
 
 public:

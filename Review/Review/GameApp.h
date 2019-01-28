@@ -3,7 +3,7 @@
 #include "Geometry.h"
 #include "LightHelper.h"
 #include "Camera.h"
-#include "UI.h"
+
 	
 class GameApp : public D3DApp
 {
@@ -21,6 +21,7 @@ public:
 
 	bool Init() override;
 	bool InitInput() override;
+	bool InitUI();
 	void OnResize()	override;
 	void UpdateScene(float dt) override;
 	void DrawScene() override;
@@ -29,7 +30,6 @@ public:
 private:
 	bool InitEffect();
 	bool InitResource();
-
 
 
 private:
@@ -41,4 +41,6 @@ private:
 	ComPtr<ID2D1SolidColorBrush> mColorBrush;	//单色笔刷
 	ComPtr<IDWriteFont> mFont;					//字体
 	ComPtr<IDWriteTextFormat> mTextFormat;		//文本格式
+
+
 };

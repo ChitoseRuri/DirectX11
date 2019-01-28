@@ -12,6 +12,11 @@ Label::Label()
 {
 }
 
+Label::Label(std::wstring text, Format textFormat, D2D1::ColorF::Enum color)
+{
+	Init(text, textFormat, color);
+}
+
 Label::~Label()
 {
 }
@@ -22,13 +27,15 @@ void Label::OnResize()
 
 void Label::DrawScene()
 {
+	md2dRenderTarget->DrawTextW(mText.c_str(), mText.length(), mTextFormats[mTextFormatIndex].Get(),
+		mRectD, mColorBrushs[mColorBrushIndex].Get());
 }
 
 void Label::UpdateScene(float dt)
 {
 }
 
-void Label::Init(std::wstring text, Format textFormat, D2D1::ColorF::Enum color)
+void Label::Init(std::wstring & text, Format & textFormat, D2D1::ColorF::Enum color)
 {
 	mText = text;
 	SetColor(color);
@@ -109,42 +116,19 @@ void Label::BeforeResize()
 void Label::AfterResize(const ComPtr<ID2D1Factory> & d2dFactory,
 	const ComPtr<IDXGISwapChain> & swapChain)
 {
-	ComPtr<IDXGISurface> surface;
-	HR(swapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(surface.GetAddressOf())));
-	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-		D2D1_RENDER_TARGET_TYPE_DEFAULT,
-		D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
-	HRESULT hr = d2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, md2dRenderTarget.GetAddressOf());
-	surface.Reset();
-	if (hr == E_NOINTERFACE)
+	// 创建固定颜色刷和文本格式
+	size_t i, size;
+	for (i = 0, size = mColors.size(); i < size; i++)
 	{
-		OutputDebugString(L"\n警告：Direct2D与Direct3D互操作性功能受限，你将无法看到文本信息。现提供下述可选方法：\n"
-			"1. 对于Win7系统，需要更新至Win7 SP1，并安装KB2670838补丁以支持Direct2D显示。\n"
-			"2. 自行完成Direct3D 10.1与Direct2D的交互。详情参阅："
-			"https://docs.microsoft.com/zh-cn/windows/desktop/Direct2D/direct2d-and-direct3d-interoperation-overview""\n"
-			"3. 使用别的字体库，比如FreeType。\n\n");
+		HR(md2dRenderTarget->CreateSolidColorBrush(
+			D2D1::ColorF(mColors[i]),
+			mColorBrushs[i].GetAddressOf()));
 	}
-	else if (hr == S_OK)
+	for (i = 0, size = mTextFormats.size(); i < size; i++)
 	{
-		// 创建固定颜色刷和文本格式
-		size_t i, size;
-		for (i = 0, size = mColors.size(); i < size; i++)
-		{
-			HR(md2dRenderTarget->CreateSolidColorBrush(
-				D2D1::ColorF(mColors[i]),
-				mColorBrushs[i].GetAddressOf()));
-		}
-		for (i = 0, size = mTextFormats.size(); i < size; i++)
-		{
-			HR(mdwriteFactory->CreateTextFormat(mFormats[i].font.c_str(), nullptr, 
-				mFormats[i].fontWeight,mFormats[i].fontStyle,mFormats[i].fontStretch, 
-				mFormats[i].fontSize, mFormats[i].localeName.c_str(),
-				mTextFormats[i].GetAddressOf()));
-		}
-	}
-	else
-	{
-		// 报告异常问题
-		assert(md2dRenderTarget);
+		HR(mdwriteFactory->CreateTextFormat(mFormats[i].font.c_str(), nullptr,
+			mFormats[i].fontWeight, mFormats[i].fontStyle, mFormats[i].fontStretch,
+			mFormats[i].fontSize, mFormats[i].localeName.c_str(),
+			mTextFormats[i].GetAddressOf()));
 	}
 }

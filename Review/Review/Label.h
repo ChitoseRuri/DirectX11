@@ -15,7 +15,6 @@ public:
 		std::wstring localeName;
 
 	public:
-		Format() {};
 		Format(std::wstring tfont = L"宋体",
 			DWRITE_FONT_WEIGHT tfontWeight = DWRITE_FONT_WEIGHT_NORMAL,
 			DWRITE_FONT_STYLE tfontStyle = DWRITE_FONT_STYLE_NORMAL,
@@ -48,13 +47,14 @@ private:
 public:
 	//控件方法
 	Label();
+	Label(std::wstring text, Format textFormat, D2D1::ColorF::Enum color);
 	~Label();
 	void OnResize() override;													//窗体大小改变后调用
 	void DrawScene() override;													//绘制Label
 	void UpdateScene(float dt) override;										//按时间更新的数据
 
 	//Label实例方法
-	void Init(std::wstring text, Format textFormat, D2D1::ColorF::Enum color);
+	void Init(std::wstring & text, Format & textFormat, D2D1::ColorF::Enum color);
 	void SetText(std::wstring text);
 	const auto & GetText() const noexcept;
 	void SetColor(D2D1::ColorF::Enum color);

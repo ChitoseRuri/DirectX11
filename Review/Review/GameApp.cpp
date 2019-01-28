@@ -32,6 +32,9 @@ bool GameApp::Init()
 	if (!InitInput())
 		return false;
 
+	if (!InitUI())
+		return false;
+
 	return true;
 }
 
@@ -46,47 +49,20 @@ bool GameApp::InitInput()
 	return mMouse!=nullptr;
 }
 
+bool GameApp::InitUI()
+{
+	mUI.mLabels.emplace_back(Label(L"Chitose Ruri", Label::Format(), D2D1::ColorF::White));
+	mUI.mLabels[0].SetRect(D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f });
+	return true;
+}
+
 void GameApp::OnResize()
 {
-	assert(md2dFactory);
-	assert(mdwriteFactory);
-	
-	mColorBrush.Reset();
-	md2dRenderTarget.Reset();
+	mUI.BeforeD3dResize();
 
 	D3DApp::OnResize();
 
-	// 为D2D创建DXGI表面渲染目标
-	ComPtr<IDXGISurface> surface;
-	HR(mSwapChain->GetBuffer(0, __uuidof(IDXGISurface), reinterpret_cast<void**>(surface.GetAddressOf())));
-	D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
-		D2D1_RENDER_TARGET_TYPE_DEFAULT,
-		D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED));
-	HRESULT hr = md2dFactory->CreateDxgiSurfaceRenderTarget(surface.Get(), &props, md2dRenderTarget.GetAddressOf());
-	surface.Reset();
-	if (hr == E_NOINTERFACE)
-	{
-		OutputDebugString(L"\n警告：Direct2D与Direct3D互操作性功能受限，你将无法看到文本信息。现提供下述可选方法：\n"
-			"1. 对于Win7系统，需要更新至Win7 SP1，并安装KB2670838补丁以支持Direct2D显示。\n"
-			"2. 自行完成Direct3D 10.1与Direct2D的交互。详情参阅："
-			"https://docs.microsoft.com/zh-cn/windows/desktop/Direct2D/direct2d-and-direct3d-interoperation-overview""\n"
-			"3. 使用别的字体库，比如FreeType。\n\n");
-	}
-	else if (hr == S_OK)
-	{
-		// 创建固定颜色刷和文本格式
-		HR(md2dRenderTarget->CreateSolidColorBrush(
-			D2D1::ColorF(D2D1::ColorF::White),
-			mColorBrush.GetAddressOf()));
-		HR(mdwriteFactory->CreateTextFormat(L"宋体", nullptr, DWRITE_FONT_WEIGHT_NORMAL,
-			DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL, 20, L"zh-cn",
-			mTextFormat.GetAddressOf()));
-	}
-	else
-	{
-		// 报告异常问题
-		assert(md2dRenderTarget);
-	}
+	mUI.AfterD3dResize();
 }
 
 void GameApp::UpdateScene(float dt)
@@ -109,13 +85,7 @@ void GameApp::DrawScene()
 	//
 	// 绘制Direct2D部分
 	//
-
-	md2dRenderTarget->BeginDraw();
-	static const WCHAR* textStr = L"切换灯光类型: 1-平行光 2-点光 3-聚光灯\n"
-		"切换模型: Q-立方体 W-球体 E-圆柱体";
-	md2dRenderTarget->DrawTextW(textStr, (UINT32)wcslen(textStr), mTextFormat.Get(),
-		D2D1_RECT_F{ 0.0f, 0.0f, 600.0f, 200.0f }, mColorBrush.Get());
-	HR(md2dRenderTarget->EndDraw());
+	mUI.DrawScene();
 
 	HR(mSwapChain->Present(0, 0));
 }
