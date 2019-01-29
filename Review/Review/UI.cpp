@@ -24,6 +24,7 @@ bool UI::InitControl(const ComPtr<IDXGISwapChain>& swapChain)
 
 void UI::BeforeD3dResize()
 {
+	md2dRenderTarget.Reset();
 	Label::BeforeResize();
 }
 
@@ -47,7 +48,7 @@ void UI::AfterD3dResize()
 	else if (hr == S_OK)
 	{
 		Control::InitControl(mdwriteFactory, md2dRenderTarget);
-		Label::AfterResize(md2dFactory, mSwapChain);	
+		Label::AfterResize();	
 	}
 	else
 	{

@@ -28,10 +28,11 @@ protected:
 	static ComPtr<IDWriteFactory> mdwriteFactory;				//DWrite工厂
 	static ComPtr<ID2D1RenderTarget> md2dRenderTarget;			//D2D渲染目标
 
-public:
+protected:
 	Control();
 	~Control();
 
+public:
 	//实例方法
 	virtual void OnResize() = 0;												//窗体大小改变后调用
 	virtual void DrawScene() = 0;												//绘制Label
@@ -45,5 +46,5 @@ public:
 
 	//静态方法
 	static void InitControl(const ComPtr<IDWriteFactory> & dwriteFactory,
-		const ComPtr<ID2D1RenderTarget> d2dRenderTarget);						//静态初始化
+		const ComPtr<ID2D1RenderTarget> & d2dRenderTarget);						//静态初始化
 };

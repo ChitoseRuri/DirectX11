@@ -113,8 +113,7 @@ void Label::BeforeResize()
 	md2dRenderTarget.Reset();
 }
 
-void Label::AfterResize(const ComPtr<ID2D1Factory> & d2dFactory,
-	const ComPtr<IDXGISwapChain> & swapChain)
+void Label::AfterResize()
 {
 	// 创建固定颜色刷和文本格式
 	size_t i, size;

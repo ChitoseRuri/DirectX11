@@ -148,6 +148,5 @@ bool GameApp::InitResource()
 
 
 
-
 	return true;
 }

@@ -47,8 +47,8 @@ const DirectX::XMFLOAT2 & Control::GetRotation() const noexcept
 	return mRotation;
 }
 
-void Control::InitControl(const ComPtr<IDWriteFactory>& dwriteFactory,
-	const ComPtr<ID2D1RenderTarget> d2dRenderTarget)
+void Control::InitControl(const ComPtr<IDWriteFactory> & dwriteFactory,
+	const ComPtr<ID2D1RenderTarget> & d2dRenderTarget)
 {
 	mdwriteFactory = dwriteFactory;
 	md2dRenderTarget = d2dRenderTarget;

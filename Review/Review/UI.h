@@ -8,7 +8,7 @@ class UI
 {
 private:
 	//D3D交换链
-	ComPtr<IDXGISwapChain> mSwapChain;	//共享交换链
+	ComPtr<IDXGISwapChain> mSwapChain;					//共享交换链
 	//D2D
 	ComPtr<ID2D1Factory> md2dFactory;					//D2D工厂
 	ComPtr<IDWriteFactory> mdwriteFactory;				//DWrite工厂

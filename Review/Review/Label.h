@@ -37,7 +37,7 @@ private:
 	static std::vector<D2D1::ColorF::Enum> mColors;								//保存颜色数据
 	static std::vector<ComPtr<IDWriteTextFormat>> mTextFormats;					//文本格式
 	static std::vector<ComPtr<IDWriteFont>> mFonts;								//字体
-	static std::vector<Format> mFormats;											//保存字体数据
+	static std::vector<Format> mFormats;										//保存字体数据
 
 	//实例成员
 	unsigned mColorBrushIndex;													//使用的笔刷的位置
@@ -63,6 +63,5 @@ public:
 	const auto & GetFormat() const noexcept;
 	//Label静态方法
 	static void BeforeResize();													//D3DApp::OnResize()前调用
-	static void AfterResize(const ComPtr<ID2D1Factory> & d2dFactory ,
-		const ComPtr<IDXGISwapChain> & swapChain);								//D3DApp::OnResize()后调用
+	static void AfterResize();													//D3DApp::OnResize()后调用
 };
