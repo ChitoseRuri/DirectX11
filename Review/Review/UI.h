@@ -1,9 +1,6 @@
 #pragma once
 #include "Label.h"
 
-
-
-
 class UI
 {
 private:
@@ -21,7 +18,7 @@ public:
 public:
 	UI();
 	~UI();
-	bool InitControl(const ComPtr<IDXGISwapChain> & swapChain);//初始化控件系统
+	bool InitD2d(const ComPtr<IDXGISwapChain> & swapChain);//初始化控件系统
 	void BeforeD3dResize();
 	void AfterD3dResize();
 	void UpdateScene(float dt);

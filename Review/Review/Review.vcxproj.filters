@@ -57,6 +57,9 @@
     <ClCompile Include="GameObject.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameApp.h">
@@ -102,6 +105,9 @@
       <Filter>Head</Filter>
     </ClInclude>
     <ClInclude Include="GameObject.h">
+      <Filter>Head</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
       <Filter>Head</Filter>
     </ClInclude>
   </ItemGroup>

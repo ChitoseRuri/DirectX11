@@ -518,7 +518,7 @@ bool D3DApp::InitDirect3D()
 	dxgiFactory1->MakeWindowAssociation(mhMainWnd, DXGI_MWA_NO_ALT_ENTER | DXGI_MWA_NO_WINDOW_CHANGES);
 
 	//传递交换链
-	mUI.InitControl(mSwapChain);
+	mUI.InitD2d(mSwapChain);
 	
 	// 每当窗口被重新调整大小的时候，都需要调用这个OnResize函数。现在调用
 	// 以避免代码重复

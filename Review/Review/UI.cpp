@@ -8,7 +8,7 @@ UI::~UI()
 {
 }
 
-bool UI::InitControl(const ComPtr<IDXGISwapChain>& swapChain)
+bool UI::InitD2d(const ComPtr<IDXGISwapChain>& swapChain)
 {
 	//获取交换链的共享
 	mSwapChain = swapChain;

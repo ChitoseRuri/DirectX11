@@ -120,6 +120,7 @@
     <ClCompile Include="Control.cpp" />
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="d3dUtil.cpp" />
+    <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="DXTrace.cpp" />
     <ClCompile Include="GameApp.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="Control.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="d3dUtil.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DXTrace.h" />
     <ClInclude Include="GameApp.h" />
     <ClInclude Include="GameObject.h" />
