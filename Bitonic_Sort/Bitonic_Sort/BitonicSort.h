@@ -22,10 +22,19 @@
 
 #define _In
 #define _Out
+#define _Both
 
 class BitonicSort
 {
 private:
+	struct CB
+	{
+		unsigned level;
+		unsigned descendMask;
+		unsigned matrixWidth;
+		unsigned matrixHeight;
+	};
+
 	// 使用模板别名(C++11)简化类型名
 	template <class T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -39,6 +48,7 @@ private:
 	// Direct3D 11.1
 	ComPtr<ID3D11Device1> m_D3dDevice1;							// D3D11.1设备
 	ComPtr<ID3D11DeviceContext1> m_D3dImmediateContext1;		// D3D11.1设备上下文
+
 	ComPtr<ID3D11Buffer> m_ConstantBuffer;						// 常量缓冲区
 	ComPtr<ID3D11Buffer> m_TypedBuffer1;						// 有类型缓冲区1
 	ComPtr<ID3D11Buffer> m_TypedBuffer2;						// 有类型缓冲区2
@@ -57,10 +67,10 @@ public:
 
 	//生成一个随机数vector
 	std::vector<int> getRandomVector(_In size_t size, _In int min, _In int max);
-	auto sort(_In std::vector<int> & vIn);
+	void sort(_Both std::vector<int> & vIn);
 
 private:
 	void inline initDirect3D();
 	void inline initComputeShader();
-
+	void inline setConstants(_In const CB & cb);
 };
