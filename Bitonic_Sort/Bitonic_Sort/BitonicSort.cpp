@@ -79,31 +79,31 @@ void BitonicSort::sort(_In std::vector<int>& vIn)
 
 	// 按行数据进行排序，先排序level <= BLOCK_SIZE 的所有情况
 	CB cb{};
-	const unsigned times = (tarCount + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
-	for (unsigned level = 2; level <= tarCount && level <= BITONIC_BLOCK_SIZE; level *= 2)
+	for (UINT level = 2, xIndex = (tarCount + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
+		level <= tarCount && level <= BITONIC_BLOCK_SIZE; level *= 2)
 	{
 		cb.level = cb.descendMask = level;
 		setConstants(cb);
-		m_D3dImmediateContext->Dispatch(times, 1, 1);
+		m_D3dImmediateContext->Dispatch(xIndex, 1, 1);
 	}
 
 	//计算相近矩阵宽高（宽>=高且都为2的次幂）
-	unsigned matrixHeight = 2, matrixWidth = 2;
-	while (matrixHeight * matrixWidth < tarCount)
+	UINT matrixWidth = 2;
+	while (matrixWidth * matrixWidth < tarCount)
 	{
 		matrixWidth *= 2;
 	}
-	matrixHeight = tarCount / matrixWidth;
+	UINT matrixHeight = tarCount / matrixWidth;
 	cb.matrixHeight = matrixHeight;
 	cb.matrixWidth = matrixWidth;
 
-	const unsigned tranWidth = matrixWidth / TRANSPOSE_BLOCK_SIZE;
-	const unsigned tranHeight = matrixHeight / TRANSPOSE_BLOCK_SIZE;
-	const unsigned eachSize = tarCount / BITONIC_BLOCK_SIZE;
+	const UINT tranWidth = matrixWidth / TRANSPOSE_BLOCK_SIZE;
+	const UINT tranHeight = matrixHeight / TRANSPOSE_BLOCK_SIZE;
+	const UINT eachSize = tarCount / BITONIC_BLOCK_SIZE;
 
 	// 排序level > BLOCK_SIZE 的所有情况
 	ComPtr<ID3D11ShaderResourceView> pNullSRV;
-	for (unsigned level = BITONIC_BLOCK_SIZE * 2; level <= tarCount; level *= 2)
+	for (UINT level = BITONIC_BLOCK_SIZE * 2; level <= tarCount; level *= 2)
 	{
 		// 如果达到最高等级，则为全递增序列
 		if (level == tarCount)
@@ -135,7 +135,7 @@ void BitonicSort::sort(_In std::vector<int>& vIn)
 		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
 		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
 		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
-		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV1.GetAddressOf());
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV2.GetAddressOf());
 		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
 
 		// 对Buffer1排序剩余行数据
@@ -160,7 +160,7 @@ inline void BitonicSort::initDirect3D()
 	HRESULT hr = S_OK;
 
 	//创建D3D设备以及上下文
-	unsigned createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;//支持Direct2D的格式
+	UINT createDeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;//支持Direct2D的格式
 	//如果是Debug模式，开启Direct11图形Debug
 #if defined(_DEBUG) || defined(DEBUG)
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
@@ -171,14 +171,14 @@ inline void BitonicSort::initDirect3D()
 		D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE 
 	};
-	unsigned numDriverTypes = ARRAYSIZE(driverTypes);
+	UINT numDriverTypes = ARRAYSIZE(driverTypes);
 
 	//特性等级数组
 	D3D_FEATURE_LEVEL featureLevels[]{
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_11_1
 	};
-	unsigned numFeatureLevels = ARRAYSIZE(featureLevels);
+	UINT numFeatureLevels = ARRAYSIZE(featureLevels);
 
 	D3D_FEATURE_LEVEL featureLevel;
 	for (auto & d3dDriverType : driverTypes)

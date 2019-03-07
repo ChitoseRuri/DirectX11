@@ -5,9 +5,9 @@
 int main()
 {
 	BitonicSort bs;
-	unsigned size;
+	UINT size;
 	cin >> size;
-	auto vat = bs.getRandomVector(size, 0, 20000);
+	auto vat = bs.getRandomVector(size, 0, 1000000);
 	bs.sort(vat);
 	for (auto & var : vat)
 	{

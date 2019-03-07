@@ -29,10 +29,10 @@ class BitonicSort
 private:
 	struct CB
 	{
-		unsigned level;
-		unsigned descendMask;
-		unsigned matrixWidth;
-		unsigned matrixHeight;
+		UINT level;
+		UINT descendMask;
+		UINT matrixWidth;
+		UINT matrixHeight;
 	};
 
 	// 使用模板别名(C++11)简化类型名
