@@ -23,6 +23,9 @@
 #define _In
 #define _Out
 #define _Both
+#define _1DSize	512u
+#define _2DSize	262144u
+#define _3DSize 134217728u
 
 class BitonicSort
 {
@@ -66,11 +69,23 @@ public:
 	~BitonicSort();
 
 	//生成一个随机数vector
-	std::vector<int> getRandomVector(_In size_t size, _In int min, _In int max);
-	void sort(_Both std::vector<int> & vIn);
+	std::vector<UINT> getRandomVector(_In size_t size, _In UINT min, _In UINT max);
+	void sort(_Both std::vector<UINT> & vIn);
 
 private:
+	//初始化Direct3D
 	void inline initDirect3D();
+	//初始化shader
 	void inline initComputeShader();
+	//设置缓冲区
 	void inline setConstants(_In const CB & cb);
+	//创建各类视图
+	void inline createDesc(_In void * pData, _In size_t size, _In size_t count);
+	
+	//0次转置排序
+	void sort1D(_Both std::vector<UINT> & vIn, _In size_t size);
+	//1次转置排序
+	void sort2D(_Both std::vector<UINT> & vIn, _In size_t size);
+	//2次转置排序
+	void sort3D(_Both std::vector<UINT> & vIn, _In size_t size);
 };

@@ -22,133 +22,41 @@ BitonicSort::~BitonicSort()
 {
 }
 
-std::vector<int> BitonicSort::getRandomVector(_In size_t size, _In int min, _In int max)
+std::vector<UINT> BitonicSort::getRandomVector(_In size_t size, _In UINT min, _In UINT max)
 {
 	m_RandEngine.seed(std::random_device()());
-	std::uniform_int_distribution<int> randRange(min, max);
-	std::vector<int> outVector(size);
+	std::uniform_int_distribution<UINT> randRange(min, max);
+	std::vector<UINT> outVector(size);
 	std::generate(outVector.begin(), outVector.end(), [&] {return randRange(m_RandEngine); });
 	return outVector;
 }
 
-void BitonicSort::sort(_In std::vector<int>& vIn)
+void BitonicSort::sort(_In std::vector<UINT>& vIn)
 {
-	size_t count = vIn.size();//原来的元素个数
+	const size_t count = vIn.size();//原来的元素个数
 	size_t tarCount = 2;
 	//补全对齐到2的次幂
 	while (tarCount < count)
 	{
 		tarCount *= 2;
 	}
-	vIn.resize(tarCount, INT_MAX);//把vector扩充到2的次幂
-	const size_t tarSize = tarCount * sizeof(int);
-
-	HR(CreateTypedBuffer(m_D3dDevice.Get(), vIn.data(), tarSize,
-		m_TypedBuffer1.GetAddressOf(), false, true));
-
-	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, tarSize,
-		m_TypedBuffer2.GetAddressOf(), false, true));
-
-	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, tarSize,
-		m_TypedBufferCopy.GetAddressOf(), true, true));
-
-	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, sizeof(CB),//这里CB的大小保证是16字节次幂
-		m_ConstantBuffer.GetAddressOf(), false, true));
-
-	//创建着色器资源视图
-	D3D11_SHADER_RESOURCE_VIEW_DESC	srvDesc;
-	srvDesc.Format = DXGI_FORMAT_R32_UINT;
-	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
-	srvDesc.Buffer.FirstElement = 0;
-	srvDesc.Buffer.NumElements = tarCount;
-	HR(m_D3dDevice->CreateShaderResourceView(m_TypedBuffer1.Get(), &srvDesc, m_DataSRV1.GetAddressOf()));
-	HR(m_D3dDevice->CreateShaderResourceView(m_TypedBuffer2.Get(), &srvDesc, m_DataSRV2.GetAddressOf()));
-
-	//创建无序访问视图
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
-	uavDesc.Format = DXGI_FORMAT_R32_UINT;
-	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.Flags = 0;
-	uavDesc.Buffer.NumElements = tarCount;
-	HR(m_D3dDevice->CreateUnorderedAccessView(m_TypedBuffer1.Get(), &uavDesc, m_DataUAV1.GetAddressOf()));
-	HR(m_D3dDevice->CreateUnorderedAccessView(m_TypedBuffer2.Get(), &uavDesc, m_DataUAV2.GetAddressOf()));
-
-	m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
-	m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
-
-	// 按行数据进行排序，先排序level <= BLOCK_SIZE 的所有情况
-	CB cb{};
-	for (UINT level = 2, xIndex = (tarCount + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
-		level <= tarCount && level <= BITONIC_BLOCK_SIZE; level *= 2)
+	vIn.resize(tarCount, UINT_MAX);//把vector扩充到2的次幂
+	createDesc(vIn.data(), tarCount * sizeof(UINT), tarCount);
+	if (tarCount <= _2DSize)
 	{
-		cb.level = cb.descendMask = level;
-		setConstants(cb);
-		m_D3dImmediateContext->Dispatch(xIndex, 1, 1);
+		sort2D(vIn, tarCount);
 	}
-
-	//计算相近矩阵宽高（宽>=高且都为2的次幂）
-	UINT matrixWidth = 2;
-	while (matrixWidth * matrixWidth < tarCount)
+	else
 	{
-		matrixWidth *= 2;
+		MessageBox(nullptr, L"There are too many numbers for Bitonic Sort to sort.", L"Warning", 0);
+		exit(0);
 	}
-	UINT matrixHeight = tarCount / matrixWidth;
-	cb.matrixHeight = matrixHeight;
-	cb.matrixWidth = matrixWidth;
-
-	const UINT tranWidth = matrixWidth / TRANSPOSE_BLOCK_SIZE;
-	const UINT tranHeight = matrixHeight / TRANSPOSE_BLOCK_SIZE;
-	const UINT eachSize = tarCount / BITONIC_BLOCK_SIZE;
-
-	// 排序level > BLOCK_SIZE 的所有情况
-	ComPtr<ID3D11ShaderResourceView> pNullSRV;
-	for (UINT level = BITONIC_BLOCK_SIZE * 2; level <= tarCount; level *= 2)
-	{
-		// 如果达到最高等级，则为全递增序列
-		if (level == tarCount)
-		{
-			cb.level = level / matrixWidth;
-			cb.descendMask = level;
-			setConstants(cb);
-		}
-		else
-		{
-			cb.level = cb.descendMask = level / matrixWidth;
-			setConstants(cb);
-		}
-		// 先进行转置，并把数据输出到Buffer2
-		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
-		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
-		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV2.GetAddressOf(), nullptr);
-		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV1.GetAddressOf());
-		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
-
-		// 对Buffer2排序列数据
-		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
-		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
-
-		// 接着转置回来，并把数据输出到Buffer1
-		cb.level = matrixWidth;
-		cb.descendMask = level;
-		setConstants(cb);
-		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
-		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
-		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
-		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV2.GetAddressOf());
-		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
-
-		// 对Buffer1排序剩余行数据
-		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
-		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
-	}
-
-	//把CPU不可访问的GPU数据导入可访问缓存
+	//把GPU数据从CPU不可访问缓存导入可访问缓存
 	m_D3dImmediateContext->CopyResource(m_TypedBufferCopy.Get(), m_TypedBuffer1.Get());
 	//把数据从GPU里面导出来
 	D3D11_MAPPED_SUBRESOURCE mappedData;
 	HR(m_D3dImmediateContext->Map(m_TypedBufferCopy.Get(), 0, D3D11_MAP_READ, 0, &mappedData));
-	//把vector的大小回复正常
+	//把vector的大小回复到原来大小
 	vIn.resize(count);
 	//把导出来的数据复制到vector中
 	const size_t srcSize = count * sizeof(int);
@@ -245,4 +153,187 @@ inline void BitonicSort::setConstants(_In const CB & cb)
 {
 	m_D3dImmediateContext->UpdateSubresource(m_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	m_D3dImmediateContext->CSSetConstantBuffers(0, 1, m_ConstantBuffer.GetAddressOf());
+}
+
+inline void BitonicSort::createDesc(_In void * pData, _In size_t size, _In size_t count)
+{
+	HR(CreateTypedBuffer(m_D3dDevice.Get(), pData, size,
+		m_TypedBuffer1.GetAddressOf(), false, true));
+
+	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, size,
+		m_TypedBuffer2.GetAddressOf(), false, true));
+
+	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, size,
+		m_TypedBufferCopy.GetAddressOf(), true, true));
+
+	HR(CreateTypedBuffer(m_D3dDevice.Get(), nullptr, sizeof(CB),//这里CB的大小保证是16字节次幂
+		m_ConstantBuffer.GetAddressOf(), false, true));
+
+	//创建着色器资源视图
+	D3D11_SHADER_RESOURCE_VIEW_DESC	srvDesc;
+	srvDesc.Format = DXGI_FORMAT_R32_UINT;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	srvDesc.Buffer.FirstElement = 0;
+	srvDesc.Buffer.NumElements = count;
+	HR(m_D3dDevice->CreateShaderResourceView(m_TypedBuffer1.Get(), &srvDesc, m_DataSRV1.GetAddressOf()));
+	HR(m_D3dDevice->CreateShaderResourceView(m_TypedBuffer2.Get(), &srvDesc, m_DataSRV2.GetAddressOf()));
+
+	//创建无序访问视图
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc;
+	uavDesc.Format = DXGI_FORMAT_R32_UINT;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.Flags = 0;
+	uavDesc.Buffer.NumElements = count;
+	HR(m_D3dDevice->CreateUnorderedAccessView(m_TypedBuffer1.Get(), &uavDesc, m_DataUAV1.GetAddressOf()));
+	HR(m_D3dDevice->CreateUnorderedAccessView(m_TypedBuffer2.Get(), &uavDesc, m_DataUAV2.GetAddressOf()));
+
+	m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
+	m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
+}
+
+void BitonicSort::sort1D(_Both std::vector<UINT>& vIn, _In size_t size)
+{
+	const auto & tarCount = size;
+
+	// 按行数据进行排序，先排序level <= BLOCK_SIZE 的所有情况
+	CB cb{};
+	for (UINT level = 2, xIndex = (tarCount + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
+		level <= tarCount && level <= BITONIC_BLOCK_SIZE; level *= 2)
+	{
+		cb.level = cb.descendMask = level;
+		setConstants(cb);
+		m_D3dImmediateContext->Dispatch(xIndex, 1, 1);
+	}
+
+	// 计算相近矩阵宽高（宽>=高且都为2的次幂）
+	UINT matrixWidth = 2;
+	while (matrixWidth * matrixWidth < tarCount)
+	{
+		matrixWidth *= 2;
+	}
+	UINT matrixHeight = tarCount / matrixWidth;
+	cb.matrixHeight = matrixHeight;
+	cb.matrixWidth = matrixWidth;
+
+	const UINT tranWidth = matrixWidth / TRANSPOSE_BLOCK_SIZE;
+	const UINT tranHeight = matrixHeight / TRANSPOSE_BLOCK_SIZE;
+	const UINT eachSize = tarCount / BITONIC_BLOCK_SIZE;
+
+	// 排序level > BITONIC_BLOCK_SIZE 的所有情况
+	ComPtr<ID3D11ShaderResourceView> pNullSRV;
+	for (UINT level = BITONIC_BLOCK_SIZE * 2; level <= tarCount; level *= 2)
+	{
+		// 如果达到最高等级，则为全递增序列
+		if (level == tarCount)
+		{
+			cb.level = level / matrixWidth;
+			cb.descendMask = level;
+			setConstants(cb);
+		}
+		else
+		{
+			cb.level = cb.descendMask = level / matrixWidth;
+			setConstants(cb);
+		}
+		// 先进行转置，并把数据输出到Buffer2
+		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
+		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV2.GetAddressOf(), nullptr);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV1.GetAddressOf());
+		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
+
+		// 对Buffer2排序列数据
+		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
+
+		// 接着转置回来，并把数据输出到Buffer1
+		cb.level = matrixWidth;
+		cb.descendMask = level;
+		setConstants(cb);
+		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
+		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV2.GetAddressOf());
+		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
+
+		// 对Buffer1排序剩余行数据
+		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
+	}
+}
+
+void BitonicSort::sort2D(_Both std::vector<UINT>& vIn, _In size_t size)
+{
+	const auto & tarCount = size;
+
+	// 按行数据进行排序，先排序level <= BLOCK_SIZE 的所有情况
+	CB cb{};
+	for (UINT level = 2, xIndex = (tarCount + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
+		level <= tarCount && level <= BITONIC_BLOCK_SIZE; level *= 2)
+	{
+		cb.level = cb.descendMask = level;
+		setConstants(cb);
+		m_D3dImmediateContext->Dispatch(xIndex, 1, 1);
+	}
+
+	//计算相近矩阵宽高（宽>=高且都为2的次幂）
+	UINT matrixWidth = 2;
+	while (matrixWidth * matrixWidth < tarCount)
+	{
+		matrixWidth *= 2;
+	}
+	UINT matrixHeight = tarCount / matrixWidth;
+	cb.matrixHeight = matrixHeight;
+	cb.matrixWidth = matrixWidth;
+
+	const UINT tranWidth = matrixWidth / TRANSPOSE_BLOCK_SIZE;
+	const UINT tranHeight = matrixHeight / TRANSPOSE_BLOCK_SIZE;
+	const UINT eachSize = tarCount / BITONIC_BLOCK_SIZE;
+
+	// 排序level > BITONIC_BLOCK_SIZE 的所有情况
+	ComPtr<ID3D11ShaderResourceView> pNullSRV;
+	for (UINT level = BITONIC_BLOCK_SIZE * 2; level <= tarCount; level *= 2)
+	{
+		// 如果达到最高等级，则为全递增序列
+		if (level == tarCount)
+		{
+			cb.level = level / matrixWidth;
+			cb.descendMask = level;
+			setConstants(cb);
+		}
+		else
+		{
+			cb.level = cb.descendMask = level / matrixWidth;
+			setConstants(cb);
+		}
+		// 先进行转置，并把数据输出到Buffer2
+		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
+		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV2.GetAddressOf(), nullptr);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV1.GetAddressOf());
+		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
+
+		// 对Buffer2排序列数据
+		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
+
+		// 接着转置回来，并把数据输出到Buffer1
+		cb.level = matrixWidth;
+		cb.descendMask = level;
+		setConstants(cb);
+		m_D3dImmediateContext->CSSetShader(m_MatrixTranspose_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, pNullSRV.GetAddressOf());
+		m_D3dImmediateContext->CSSetUnorderedAccessViews(0, 1, m_DataUAV1.GetAddressOf(), nullptr);
+		m_D3dImmediateContext->CSSetShaderResources(0, 1, m_DataSRV2.GetAddressOf());
+		m_D3dImmediateContext->Dispatch(tranWidth, tranHeight, 1);
+
+		// 对Buffer1排序剩余行数据
+		m_D3dImmediateContext->CSSetShader(m_BitonicSort_CS.Get(), nullptr, 0);
+		m_D3dImmediateContext->Dispatch(eachSize, 1, 1);
+	}
+}
+
+void BitonicSort::sort3D(_Both std::vector<UINT>& vIn, _In size_t size)
+{
 }
