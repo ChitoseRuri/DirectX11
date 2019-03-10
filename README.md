@@ -7,3 +7,5 @@ which is not only similar to the left corner one but also with the right answer.
 Made by windows SDK. I made this to review some knowledge of DirectX 11.1.
 ## Bitonic Sort
 As the name says. And I try to make it easily to be used.
+## Rich3D
+A LAN battle game.
